@@ -104,7 +104,7 @@ namespace pdfpc {
          * Time in seconds the presentation has been running. A negative value
          * indicates the pretalk mode.
          */
-        protected int running_time = 0;
+        public int running_time { get; protected set; default = 0; }
 
         /**
          * Signal: fired when the timer label changes
@@ -375,6 +375,19 @@ namespace pdfpc {
             // Tell everybody subscribed to the signal
             this.change(talk_time, this.state,
                 "%s%.2u:%.2u:%.2u".printf(prefix, hours, minutes, seconds));
+        }
+
+        public string get_formatted_time_label(int timeInSecs) {
+            uint hours = 0, minutes = 0, seconds = 0;
+            string prefix = "";
+            if (timeInSecs < 0) {
+                timeInSecs = -timeInSecs;
+                prefix = "-";
+            }
+            hours   = timeInSecs/3600;
+            minutes = timeInSecs/60 % 60;
+            seconds = timeInSecs % 60;
+            return "%s%.2u:%.2u:%.2u".printf(prefix, hours, minutes, seconds);
         }
     }
 }

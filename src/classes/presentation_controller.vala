@@ -66,6 +66,16 @@ namespace pdfpc {
          */
         public int current_slide_number { get; protected set; }
 
+        protected bool just_output_zero_slide_timing = false;
+
+        public void output_next_slide_timing(int new_time_secs, int old_time_secs) {
+            string abs_time_label = timer.get_formatted_time_label(new_time_secs);
+            string rel_time_label = timer.get_formatted_time_label(new_time_secs - old_time_secs);
+            stdout.printf("SLIDE %i PAGE %i took %s until %s\n", this.current_user_slide_number+1, this.current_slide_number+1, rel_time_label, abs_time_label);
+            this.last_transition_time_in_secs = new_time_secs;
+            just_output_zero_slide_timing = new_time_secs == 0 && old_time_secs == 0;
+        }
+
         public void switch_to_slide_number(int slide_number, bool skip_history=false) {
             if (slide_number == this.current_slide_number) {
                 // already there...
@@ -87,6 +97,8 @@ namespace pdfpc {
                     this.faded_to_black = false;
                 }
             }
+
+            output_next_slide_timing(this.timer.running_time, this.last_transition_time_in_secs);
 
             if (!skip_history) {
                 if (this.history_bck.is_empty ||
@@ -232,6 +244,8 @@ namespace pdfpc {
          */
         protected bool zoom_stack_drawing = false;
         protected ScaledRectangle zoom_stack_highlight;
+
+        protected int last_transition_time_in_secs = 0;
 
         /**
          * The number of slides in the presentation
@@ -1959,6 +1973,7 @@ namespace pdfpc {
          */
         protected void start() {
             this.timer.start();
+            this.last_transition_time_in_secs = 0;
             // start the autoadvancing on the initial page, if needed
             this.start_autoadvance_timer(this.current_slide_number);
             this.controllables_update();
@@ -1980,6 +1995,7 @@ namespace pdfpc {
          */
         public void reset_timer() {
             this.timer.reset();
+            this.last_transition_time_in_secs = 0;
         }
 
         /**
